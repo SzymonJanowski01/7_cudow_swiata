@@ -7,7 +7,7 @@ from GUI.IconsManager import icons
 
 import supporting_functions as sf
 from GUI.Frames.HomeWindow import HomeFrame
-# from GUI.Frames.PlayersWindow import PlayersFrame
+from GUI.Frames.PlayersWindow import PlayersFrame
 # from GUI.Frames.GamesWindow import GamesFrame
 # from GUI.Frames.StatsWindow import StatsFrame
 # from GUI.Frames.BestsWindow import BestsFrame
@@ -121,9 +121,8 @@ class App(ctk.CTk):
                                                          text="Players", fg_color="transparent",
                                                          text_color=("gray10", "gray90"),
                                                          hover_color=("gray70", "gray30"), image=icons.Users,
-                                                         anchor="w",
-                                                         command=lambda: self.show_frame("PlayersFrame"),
-                                                         font=ctk.CTkFont(size=15))
+                                                         anchor="w", font=ctk.CTkFont(size=15),
+                                                         command=lambda: self.show_frame("PlayersFrame"))
         self.nav_buttons["PlayersFrame"].grid(row=1, column=0, sticky="ew")
 
         self.nav_buttons["GamesFrame"] = ctk.CTkButton(self.nav_frame, corner_radius=0, height=40, border_spacing=10,
@@ -169,8 +168,8 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        # , PlayersFrame, GamesFrame, StatsFrame, BestsFrame, TempGameFrame
-        for F in (HomeFrame,):
+        # GamesFrame, StatsFrame, BestsFrame, TempGameFrame
+        for F in (HomeFrame, PlayersFrame):
             frame = F(self.container, self, corner_radius=20)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -194,13 +193,11 @@ class App(ctk.CTk):
         self._player_chekboxes = []
         self._players_chekboxes = []
 
-
         # clear temporary game frame button
         self.nav_buttons["TemporaryGameFrame"].grid_forget()
 
         # reset flags
         self._game_properly_calculated_flag = False
-        self._player_editing_flag = False
 
         # check for empty game and clear it if found
         if self._current_frame == "game" and self._empty_game_present_flag:
@@ -208,7 +205,15 @@ class App(ctk.CTk):
             self._empty_game_present_flag = False
             self._latest_game_id = None
 
+        if self._player_editing_flag:
+            CTkMessagebox(title="Warning", message="Save or cancel player edition before changing the frame",
+                          icon="warning")
+            return
+
         frame = self.frames[frame_name]
+
+        if hasattr(frame, "refresh"):
+            frame.refresh()
         frame.tkraise()
 
         for name, btn in self.nav_buttons.items():

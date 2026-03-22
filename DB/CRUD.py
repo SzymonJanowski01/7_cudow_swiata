@@ -275,7 +275,7 @@ def delete_last_game() -> bool:
             return False
 
 
-def delete_game(game_id: str) -> bool:
+def delete_game(game_id: str) -> bool | None:
     with get_connection() as conn:
         try:
             cursor = conn.cursor()

@@ -32,7 +32,7 @@ class HomeFrame(ctk.CTkFrame):
         # home_buttons frame
         self.home_buttons_frame = ctk.CTkFrame(self, corner_radius=50, fg_color="transparent", border_color="grey50",
                                                border_width=2)
-        self.home_buttons_frame.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
+        self.home_buttons_frame.grid(row=0, rowspan=2, column=1, sticky="nsew", padx=10, pady=10)
         self.home_buttons_frame.grid_columnconfigure((0, 1, 2), weight=1)  # type: ignore
         self.home_buttons_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), weight=1)  # type: ignore
 
@@ -43,6 +43,8 @@ class HomeFrame(ctk.CTkFrame):
 
         :return: None
         """
+        self.clear_frame(self.home_buttons_frame)
+
         add_player_label = ctk.CTkLabel(self.home_buttons_frame, text="Add player", font=ctk.CTkFont(size=30))
         add_player_label.grid(row=0, column=1, padx=20, pady=20)
         self.add_player_input = ctk.CTkEntry(self.home_buttons_frame, font=ctk.CTkFont(size=20),
@@ -90,6 +92,8 @@ class HomeFrame(ctk.CTkFrame):
 
         :return: None
         """
+        self.clear_frame(self.home_buttons_frame)
+
         self._active_player_menus_list = []
         # convert list of tuples to list of strings for option menus
         self.potential_players = [player[0] for player in self._players]
@@ -216,3 +220,15 @@ class HomeFrame(ctk.CTkFrame):
         else:
             # if result is None (no connection to database) shutdown the app
             self.quit()
+
+    # static methods
+    @staticmethod
+    def clear_frame(frame: ctk.CTkFrame | ctk.CTkScrollableFrame) -> None:
+        """
+        Clears the frame of all widgets, used to prepare the frame for new widgets
+
+        :param frame: Frame to clear
+        :return: None
+        """
+        for widget in frame.winfo_children():
+            widget.destroy()
