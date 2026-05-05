@@ -1,36 +1,40 @@
 import customtkinter as ctk
 from DB import CRUD
 from CTkMessagebox import CTkMessagebox
+from GUI.IconsManager import icons
+
+import supporting_functions as sf
+import scipy.stats as ss
 
 
 class GamesFrame(ctk.CTkFrame):
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, controller, **kwargs):
         super().__init__(parent, **kwargs)
 
-    games_number = len(self._games) if len(self._games) > 0 else 0
-    self.games_list_frame = ctk.CTkScrollableFrame(self, corner_radius=50, fg_color="transparent",
-                                                   label_text=f"Games: {games_number}",
-                                                   label_font=ctk.CTkFont(size=35),
-                                                   label_fg_color="grey60")
+        self.controller = controller
+        self._games = CRUD.get_all_games()
 
-    case
-    "games":
-    self._current_frame = "games"
-    self.games_list_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
-    self.games_list_frame.configure(label_text=f"Games: {len(self._games)}", label_text_color="black")
+        self.games_list_frame = ctk.CTkScrollableFrame(self, corner_radius=50, fg_color="transparent",
+                                                       label_text=f"Games: {len(self._games)}",
+                                                       label_font=ctk.CTkFont(size=35),
+                                                       label_fg_color="grey60")
 
-    self.game_view_frame.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
-    self.game_view_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), weight=1)  # type: ignore
+        self.games_list_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.games_list_frame.configure(label_text=f"Games: {len(self._games)}", label_text_color="black")
 
-    for index, game in enumerate(self._games):
-        game_button = ctk.CTkButton(self.games_list_frame, text=game[1], text_color="black",
-                                    font=ctk.CTkFont(size=20), fg_color="grey50", corner_radius=20,
-                                    command=lambda game_index=index:
-                                    self.view_game_button_event(game_index))
-        game_button.grid(row=index + 1, column=0, padx=(0, 10), pady=10, sticky="nsew")
+        self.game_view_frame = ctk.CTkFrame(self, corner_radius=50, fg_color="transparent",)
+        self.game_view_frame.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
+        self.game_view_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), weight=1)  # type: ignore
 
-    if len(self._games) > 0:
-        self.view_game_button_event(0)
+        for index, game in enumerate(self._games):
+            game_button = ctk.CTkButton(self.games_list_frame, text=game[1], text_color="black",
+                                        font=ctk.CTkFont(size=20), fg_color="grey50", corner_radius=20,
+                                        command=lambda game_index=index:
+                                        self.view_game_button_event(game_index))
+            game_button.grid(row=index + 1, column=0, padx=(0, 10), pady=10, sticky="nsew")
+
+        if len(self._games) > 0:
+            self.view_game_button_event(0)
 
     def view_game_button_event(self, index) -> None:
         """
@@ -83,7 +87,7 @@ class GamesFrame(ctk.CTkFrame):
                             label.grid(row=row-1, column=col, padx=5, pady=5)
 
         delete_game_button = ctk.CTkButton(self.game_view_frame, text="", fg_color="#BF2A2A", hover_color="darkred",
-                                           image=self.delete_image, corner_radius=20, width=50,
+                                           image=icons.get("Delete", (20, 20)), corner_radius=20, width=50,
                                            command=lambda: self.delete_game_button_event(self._games[index][0]))
         delete_game_button.grid(row=11, column=(len(game_details) + 1) // 2, padx=10, pady=10)
 
@@ -98,11 +102,48 @@ class GamesFrame(ctk.CTkFrame):
         result = CRUD.delete_game(game_id)
         if result:
             # update games list for correct games list frame display
-            self._games = CRUD.get_all_games()
-            self.games_button_event()
+            self.controller.show_frame("GamesFrame")
         elif result is False:
             CTkMessagebox(title="Warning", message=f"Error while deleting game {game_id}", icon="warning",
                           corner_radius=10, sound=True, justify="center")
         else:
             # if result is None (no connection to database) shutdown the app
             self.quit()
+
+    def refresh(self):
+        self._games = CRUD.get_all_games()
+        self.clear_frame(self.games_list_frame)
+        self.clear_frame(self.game_view_frame)
+
+        self.games_list_frame = ctk.CTkScrollableFrame(self, corner_radius=50, fg_color="transparent",
+                                                       label_text=f"Games: {len(self._games)}",
+                                                       label_font=ctk.CTkFont(size=35),
+                                                       label_fg_color="grey60")
+
+        self.games_list_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.games_list_frame.configure(label_text=f"Games: {len(self._games)}", label_text_color="black")
+
+        self.game_view_frame = ctk.CTkFrame(self, corner_radius=50, fg_color="transparent", )
+        self.game_view_frame.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
+        self.game_view_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), weight=1)  # type: ignore
+
+        for index, game in enumerate(self._games):
+            game_button = ctk.CTkButton(self.games_list_frame, text=game[1], text_color="black",
+                                        font=ctk.CTkFont(size=20), fg_color="grey50", corner_radius=20,
+                                        command=lambda game_index=index:
+                                        self.view_game_button_event(game_index))
+            game_button.grid(row=index + 1, column=0, padx=(0, 10), pady=10, sticky="nsew")
+
+        if len(self._games) > 0:
+            self.view_game_button_event(0)
+
+    @staticmethod
+    def clear_frame(frame: ctk.CTkFrame | ctk.CTkScrollableFrame) -> None:
+        """
+        Clears the frame of all widgets, used to prepare the frame for new widgets
+
+        :param frame: Frame to clear
+        :return: None
+        """
+        for widget in frame.winfo_children():
+            widget.destroy()

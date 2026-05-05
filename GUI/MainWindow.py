@@ -8,7 +8,7 @@ from GUI.IconsManager import icons
 import supporting_functions as sf
 from GUI.Frames.HomeWindow import HomeFrame
 from GUI.Frames.PlayersWindow import PlayersFrame
-# from GUI.Frames.GamesWindow import GamesFrame
+from GUI.Frames.GamesWindow import GamesFrame
 # from GUI.Frames.StatsWindow import StatsFrame
 # from GUI.Frames.BestsWindow import BestsFrame
 # from GUI.Frames.TempGameWindow import TempGameFrame
@@ -45,7 +45,7 @@ class App(ctk.CTk):
         self._players_chekboxes = []
 
         # frame tracking
-        self._current_frame = "home"
+        self._current_frame = "HomeFrame"
 
         # game_id from game creation to be used in game details CRUD saving
         self._latest_game_id = None
@@ -168,8 +168,8 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        # GamesFrame, StatsFrame, BestsFrame, TempGameFrame
-        for F in (HomeFrame, PlayersFrame):
+        #  StatsFrame, BestsFrame, TempGameFrame
+        for F in (HomeFrame, PlayersFrame, GamesFrame):
             frame = F(self.container, self, corner_radius=20)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -211,6 +211,7 @@ class App(ctk.CTk):
             return
 
         frame = self.frames[frame_name]
+        self._current_frame = frame_name
 
         if hasattr(frame, "refresh"):
             frame.refresh()
@@ -229,7 +230,7 @@ class App(ctk.CTk):
 
         :return: None
         """
-        if self._current_frame == "game" and self._empty_game_present_flag:
+        if self._current_frame == "GameFrame" and self._empty_game_present_flag:
             quit_var = CTkMessagebox(title="Warning",
                                      message="You have unsaved game details, are you sure you want to quit?",
                                      icon="question", option_1="Save and quit", option_2="Quit without saving",
@@ -242,7 +243,7 @@ class App(ctk.CTk):
             else:
                 CRUD.delete_last_game()
                 self.quit()
-        elif self._current_frame == "players" and self._player_editing_flag:
+        elif self._current_frame == "PlayersFrame" and self._player_editing_flag:
             quit_var = CTkMessagebox(title="Warning",
                                      message="You have unsaved player details, are you sure you want to quit?",
                                      icon="question", corner_radius=10, sound=True, justify="center",

@@ -15,7 +15,6 @@ class HomeFrame(ctk.CTkFrame):
 
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure((0, 1), weight=1)  # type: ignore
-        # self.add_game_button_event()
 
         home_frame_add_player_button = ctk.CTkButton(self, text="Add player", compound="top",
                                                      height=200, width=200, image=icons.get("Add_user", (100, 100)),
@@ -35,6 +34,8 @@ class HomeFrame(ctk.CTkFrame):
         self.home_buttons_frame.grid(row=0, rowspan=2, column=1, sticky="nsew", padx=10, pady=10)
         self.home_buttons_frame.grid_columnconfigure((0, 1, 2), weight=1)  # type: ignore
         self.home_buttons_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), weight=1)  # type: ignore
+
+        self.add_game_button_event()
 
     def add_player_button_event(self) -> None:
         """
@@ -169,10 +170,10 @@ class HomeFrame(ctk.CTkFrame):
 
         :return: None
         """
-        if self._last_game:
-            while len(self._last_game) > len(self._active_player_menus_list):
+        if self.controller._last_game:
+            while len(self.controller._last_game) > len(self._active_player_menus_list):
                 self.add_more_players_to_game_button_event()
-            for index, player in enumerate(self._last_game):
+            for index, player in enumerate(self.controller._last_game):
                 self._active_player_menus_list[index].set(player)
         else:
             error_entry = ctk.CTkEntry(self.home_buttons_frame, font=ctk.CTkFont(size=20), fg_color="transparent",
@@ -203,16 +204,16 @@ class HomeFrame(ctk.CTkFrame):
             return
 
         result = CRUD.create_game()
-        self._latest_game_id = result
+        self.controller._latest_game_id = result
         if result:
-            self._last_game = players
+            self.controller._last_game = players
             success_entry = ctk.CTkEntry(self.home_buttons_frame, font=ctk.CTkFont(size=20), fg_color="transparent",
                                          border_width=5, border_color="green", width=250, height=50)
             success_entry.insert(0, f"Game added successfully")
             success_entry.configure(state="disabled", justify="center")
             success_entry.grid(row=11, column=1, padx=20, pady=20)
             success_entry.after(1500, success_entry.destroy)
-            self._empty_game_present_flag = True
+            self.controller._empty_game_present_flag = True
             self.controller.show_frame("TempGameFrame")
         elif result is False:
             CTkMessagebox(title="Warning", message=f"Error while adding game {players}", icon="warning",
