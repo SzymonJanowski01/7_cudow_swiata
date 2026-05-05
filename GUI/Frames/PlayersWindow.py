@@ -12,18 +12,18 @@ class PlayersFrame(ctk.CTkFrame):
 
         self.controller = controller
 
-        self.scroll = ctk.CTkScrollableFrame(self)
-
         self._players = CRUD.get_all_users()
         self._players_labels = []
         self._players_edit_buttons = []
         self._players_delete_buttons = []
 
+        self.scroll = ctk.CTkScrollableFrame(self, label_text=f"Players count: {len(self._players)}",
+                                                   label_font=ctk.CTkFont(size=35),
+                                                   label_text_color="black")
+
         self.grid_columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.scroll.grid(row=0, column=0, sticky="nsew")
-        self.scroll.configure(label_text=f"Players count: {len(self._players)}",
-                              label_text_color="black")
         self.scroll.grid_columnconfigure(0, weight=1)
 
         for index, player in enumerate(self._players):
